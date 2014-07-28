@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Bootstrap (CSS + JS) & JQuery -->
+<link href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet">
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7/jquery.js"></script>
+<script src="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+
+</head>
+ 
+<body>
+ 
+<div class="container">
+ <!-- container starts here -->
+
+<div id="content">
+    <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
+        <li class="active"><a href="#home" data-toggle="tab">...</a></li>
+        <li><a href="#observe" data-toggle="tab">Observe</a></li>
+        <li class="ride"><a href="#ride" data-toggle="tab">Ride</a></li>
+    </ul>
+    <div id="my-tab-content" class="tab-content">
+        <div class="tab-pane active" id="home">
+            <h1>Home page</h1>
+            <p>This will describe home page stuff.</p>
+        </div>
+        <div class="tab-pane" id="observe">
+            <h1>Observe</h1>
+            <p>OMG ponies, let's observe them.</p>
+        </div>
+        <div class="tab-pane" id="ride">
+            <h1>Ride</h1>
+            <p>OMG ponies, let's ride them.</p>
+            <div id="sensor_data"></div>
+        </div>
+    </div>
+</div>
+ 
+ 
+<script type="text/javascript">
+    jQuery(document).ready(function ($) {
+        $('#tabs').tab();
+        $("li.ride").click(sensorTest);
+    });
+</script>  
+
+<script type="text/javascript">
+function sensorTest(){
+    console.log("sensor test");
+    if(window.DeviceMotionEvent==undefined){
+        document.getElementById("sensor_data").innerHTML = "Sorry, no sensor data found."
+    }
+        else {
+        window.ondevicemotion = function(event) {
+            ax = event.accelerationIncludingGravity.x;
+            ay = event.accelerationIncludingGravity.y;
+            az = event.accelerationIncludingGravity.z;
+            
+            document.getElementById("sensor_data").innerHTML = "x: " + ax + "<br/>" + "y: " + ay + "<br/>" + "z: " + az;   
+        }
+    }
+}
+</script>
+
+</div>
+<!-- container ends here -->
+ 
+ 
+
+ 
+</body>
+</html>
