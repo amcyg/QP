@@ -1,157 +1,27 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <!-- Responsive design -->
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <!-- Bootstrap + JQuery + Flot + Gyro -->
+    <!-- Bootstrap, JQuery, CSS Toggle Switch, and custom stylesheet-->
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
     <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet">
-    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7/jquery.js"></script>
     <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
-    <script src="jquery.flot.js"></script>
-    <script src="examples.css" rel="stylesheet" type="text/css"></script>
-    <script src="gyro.js"></script>
+    <link href="toggle-switch.css" rel="stylesheet">
 
-    <!-- Headers for Flot plot -->
-    <link href="examples.css" rel="stylesheet" type="text/css">
-    <!--[if lte IE 8]><script language="javascript" type="text/javascript" src="../../excanvas.min.js"></script><![endif]-->
-    <script language="javascript" type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
-    <script language="javascript" type="text/javascript" src="jquery.flot.js"></script>
-    <script type="text/javascript">
-
-    $(function() {
-
-        var d1 = [];
-        for (var i = 0; i < 14; i += 0.5) {
-            d1.push([i, Math.sin(i)]);
-        }
-
-        var d2 = [[0, 3], [4, 8], [8, 5], [9, 13]];
-
-        var d3 = [];
-        for (var i = 0; i < 14; i += 0.5) {
-            d3.push([i, Math.cos(i)]);
-        }
-
-        var d4 = [];
-        for (var i = 0; i < 14; i += 0.1) {
-            d4.push([i, Math.sqrt(i * 10)]);
-        }
-
-        var d5 = [];
-        for (var i = 0; i < 14; i += 0.5) {
-            d5.push([i, Math.sqrt(i)]);
-        }
-
-        var d6 = [];
-        for (var i = 0; i < 14; i += 0.5 + Math.random()) {
-            d6.push([i, Math.sqrt(2*i + Math.sin(i) + 5)]);
-        }
-
-        $.plot("#placeholder", [{
-            data: d1,
-            lines: { show: true, fill: true }
-        }, {
-            data: d2,
-            bars: { show: true }
-        }, {
-            data: d3,
-            points: { show: true }
-        }, {
-            data: d4,
-            lines: { show: true }
-        }, {
-            data: d5,
-            lines: { show: true },
-            points: { show: true }
-        }, {
-            data: d6,
-            lines: { show: true, steps: true }
-        }]);
-
-        // Add the Flot version string to the footer
-
-        $("#footer").prepend("Flot " + $.plot.version + " &ndash; ");
-    });
-
-    </script>
-</head>
- 
+    <title>Quantified Pony: the Fitbit for horses</title>   
+  </head>
 <body>
- 
-<!-- container starts here -->
-<div class="container">
+    <div class="switch-toggle well">
+        <input id="observe" name="view" type="radio" checked>
+        <label for="observe" onclick="">Observe</label>
 
-<div id="content">
-    <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
-        <li class="active"><a href="#home" data-toggle="tab">...</a></li>
-        <li class="observe"><a href="#observe" data-toggle="tab">Observe</a></li>
-        <li class="ride"><a href="#ride" data-toggle="tab">Ride</a></li>
-    </ul>
-    <div id="my-tab-content" class="tab-content">
-        <div class="tab-pane active" id="home">
-            <h1>Home page</h1>
-            <p>This will describe home page stuff.</p>
-        </div>
-        <div class="tab-pane" id="observe">
-            <h1>Observe</h1>
-            <p>OMG ponies, let's observe them.</p>
-            <div class="demo-container">
-            <div id="placeholder" class="demo-placeholder"></div>
-            </div>
-        </div>
-        <div class="tab-pane" id="ride">
-            <h1>Ride</h1>
-            <p>OMG ponies, let's ride them.</p>
-            <div id="sensor_data"></div>
-        </div>
+        <input id="ride" name="view" type="radio">
+        <label for="ride" onclick="">Ride</label>
+
+        <a class="btn btn-primary"></a>
     </div>
-</div>
- 
- 
-<script type="text/javascript">
-    jQuery(document).ready(function ($) {
-        $('#tabs').tab();
-        $("li.ride").click(sensorTest);
-        //$("li.observe").click(sensorPlot);
-    });
-</script>  
 
-<script type="text/javascript">
-function sensorTest(){
-    // Set up data collection with column titles
-    var sensorData = [];
-    sensorData.push(['milliseconds', 'x', 'y', 'z', 'alpha', 'beta', 'gamma']); 
-    console.log("sensor test");
-    if(window.DeviceMotionEvent==undefined){
-        document.getElementById("sensor_data").innerHTML = "Sorry, no sensor data found."
-    }
-    else { 
-        gyro.frequency = 10; // 10 ms = 100 Hz
-        milliseconds = 0;
-        gyro.startTracking(function(o) {
-            // o.x, o.y, o.z for accelerometer
-            // o.alpha, o.beta, o.gamma for gyro
-            document.getElementById("sensor_data").innerHTML = 
-                "x: " + o.x + "<br/>" 
-                + "y: " + o.y + "<br/>" 
-                + "z: " + o.z + "<br/>" 
-                + "alpha: " + o.alpha + "<br/>" 
-                + "beta: " + o.beta + "<br/>" 
-                + "gamma: " + o.gamma;
-            sensorData.push([milliseconds, o.x, o.y, o.z, o.alpha, o.beta, o.gamma]);
-            console.log(sensorData[-1]);
-            milliseconds = milliseconds + gyro.frequency;
-        });
-    }
-}
-</script>
-
-</div>
-<!-- container ends here -->
- 
- 
-
- 
 </body>
-</html>
