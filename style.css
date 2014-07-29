@@ -5,3 +5,7 @@
 #ride_mode{
 	display: none;
 }
+
+html, body {
+    height: 100%; /* make the percentage height on placeholder work */
+}

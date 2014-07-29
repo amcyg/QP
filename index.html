@@ -4,11 +4,15 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <!-- Bootstrap, JQuery, CSS Toggle Switch, and custom stylesheet-->
+    <!-- Bootstrap, JQuery, CSS Toggle Switch, Gyro, Flot and custom stylesheet-->
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
     <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet">
     <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="gyro.js"></script>
+    <script type="text/javascript" src="jquery.flot.js"></script>
+    <!-- <script type="text/javascript" src="jquery.flot.resize.js"></script> -->
     <link href="toggle-switch.css" rel="stylesheet">
+    <link href="examples.css" rel="stylesheet">
     <link href="style.css" rel="stylesheet">
     <title>Quantified Pony: the Fitbit for horses</title>   
   </head>
@@ -22,14 +26,26 @@
         <a class="btn btn-primary"></a>
     </div>
     <!-- Content divs -->
+    <!-- Start Mode -->
+    <div id="start_mode">
+        <center>
+        <p>Welcome to Quantified Pony: the Fitbit for horses!</p>
+        <p>Use the toggle above to select your mode.</p>
+        </center>
+    </div>
     <!-- Observe Mode -->
-    <div id="observe_mode" display="none">
+    <div id="observe_mode">
+        <center>
         <p>Welcome to observe mode.</p>
-
+        <div id="placeholder" style="width:100%; height:300px;"></div>
+        </center>
     </div>
     <!-- Ride Mode -->
-    <div id="ride_mode" display="none">
+    <div id="ride_mode">
+        <center>
         <p>Welcome to ride mode.</p>
+        <div id="sensor_data"></div>
+        </center>
     </div>
     <!-- Scripts -->
     <script>
@@ -38,17 +54,70 @@
         if(state=='observe'){
             document.getElementById("observe_mode").style.display="block";
             document.getElementById("ride_mode").style.display="none";
+            document.getElementById("start_mode").style.display="none";
+            sensorPlot();
         }
         else if(state=='ride'){
             document.getElementById("observe_mode").style.display="none";
             document.getElementById("ride_mode").style.display="block";
+            document.getElementById("start_mode").style.display="none";
+            sensorTest();
         }
     }
 
     // Pull data off sensors
-
+    function sensorTest(){
+        // Set up data collection with column titles
+        var sensorData = [];
+        sensorData.push(['milliseconds', 'x', 'y', 'z', 'alpha', 'beta', 'gamma']); 
+        console.log("sensor test");
+        if(window.DeviceMotionEvent==undefined){
+            document.getElementById("sensor_data").innerHTML = "Sorry, no sensor data found."
+        }
+        else { 
+            gyro.frequency = 10; // 10 ms = 100 Hz
+            milliseconds = 0;
+            gyro.startTracking(function(o) {
+                // o.x, o.y, o.z for accelerometer
+                // o.alpha, o.beta, o.gamma for gyro
+                document.getElementById("sensor_data").innerHTML = 
+                    "x: " + o.x + "<br/>" 
+                    + "y: " + o.y + "<br/>" 
+                    + "z: " + o.z + "<br/>" 
+                    + "alpha: " + o.alpha + "<br/>" 
+                    + "beta: " + o.beta + "<br/>" 
+                    + "gamma: " + o.gamma;
+                sensorData.push([milliseconds, o.x, o.y, o.z, o.alpha, o.beta, o.gamma]);
+                // console.log(sensorData[-1]);
+                milliseconds = milliseconds + gyro.frequency;
+            });
+        }
+    }
 
     // Chart dummy data using Flot
+    function sensorPlot(){
+        $(function () {
+            // var time = [0, 10, 20, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140];
+
+            var x = [[0, -3.761590156], [10, -3.761590156], [20, -3.761590156], [30, -3.761590156], [40, -0.726490566], 
+                        [50, -0.726490566], [60,-0.726490566], [70, -0.726490566], [80, -3.806630856], [90, -3.806630856],
+                        [100, -3.806630856], [110, -3.806630856], [120, -3.806630856], [130, -4.948665048]];
+
+            var y = [[0, -9.103203469], [10, -9.103203469], [20, -9.103203469], [30, -9.103203469], [40, -16.60229214],
+                        [50, -16.60229214], [60, -16.60229214], [70, -16.60229214], [80, -8.17574961], [90, -8.17574961], 
+                        [100, -8.17574961], [110, -8.17574961], [120, -8.17574961], [130, -7.631817067]];
+         
+            var z = [[0, 4.644751221], [10, 4.644751221], [20, 4.644751221], [30, 4.644751221], [40, 0.161608612],
+                        [50, 0.161608612], [60, 0.161608612], [70, 0.161608612], [80, 4.532822293], [90, 4.532822293],
+                        [100, 4.532822293], [110, 4.532822293], [120, 4.532822293], [130, 0.473752507]];
+            
+            $.plot($("#placeholder"), [ x, y, z ]);
+            
+            window.onresize = function(event) {
+                $.plot($("#placeholder"), [ x, y, z ]);
+            }
+        });
+    }
     </script>
 
 </body>
