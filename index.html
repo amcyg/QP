@@ -4,24 +4,52 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-
     <!-- Bootstrap, JQuery, CSS Toggle Switch, and custom stylesheet-->
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
     <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet">
     <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
     <link href="toggle-switch.css" rel="stylesheet">
-
+    <link href="style.css" rel="stylesheet">
     <title>Quantified Pony: the Fitbit for horses</title>   
   </head>
 <body>
+    <!-- Toggle switch -->
     <div class="switch-toggle well">
         <input id="observe" name="view" type="radio" checked>
-        <label for="observe" onclick="">Observe</label>
-
+        <label for="observe" onclick="toggleswitch('observe')">Observe</label>
         <input id="ride" name="view" type="radio">
-        <label for="ride" onclick="">Ride</label>
-
+        <label for="ride" onclick="toggleswitch('ride')">Ride</label>
         <a class="btn btn-primary"></a>
     </div>
+    <!-- Content divs -->
+    <!-- Observe Mode -->
+    <div id="observe_mode" display="none">
+        <p>Welcome to observe mode.</p>
+
+    </div>
+    <!-- Ride Mode -->
+    <div id="ride_mode" display="none">
+        <p>Welcome to ride mode.</p>
+    </div>
+    <!-- Scripts -->
+    <script>
+    // Control text display based on toggle position
+    function toggleswitch(state){
+        if(state=='observe'){
+            document.getElementById("observe_mode").style.display="block";
+            document.getElementById("ride_mode").style.display="none";
+        }
+        else if(state=='ride'){
+            document.getElementById("observe_mode").style.display="none";
+            document.getElementById("ride_mode").style.display="block";
+        }
+    }
+
+    // Pull data off sensors
+
+
+    // Chart dummy data using Flot
+    </script>
 
 </body>
+</html>
