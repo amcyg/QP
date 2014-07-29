@@ -9,3 +9,23 @@
 html, body {
     height: 100%; /* make the percentage height on placeholder work */
 }
+
+button.stop_button {
+    background: red !important;
+    padding: 5px 29px 5px 29px !important;
+}
+
+#start_timer_button {
+    background: #389838;
+    border: none;
+    color: white;
+    border-radius: 10px;
+    padding: 5px 10px 5px 10px;
+    position: relative;
+    top: 0px;
+    right: 0px;
+    opacity: .80;
+    &:hover {
+        opacity: 1;
+    }
+}

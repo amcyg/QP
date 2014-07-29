@@ -4,19 +4,21 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+
     <!-- Bootstrap, JQuery, CSS Toggle Switch, Gyro, Flot and custom stylesheet-->
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
     <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet">
     <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
     <script type="text/javascript" src="gyro.js"></script>
     <script type="text/javascript" src="jquery.flot.js"></script>
-    <!-- <script type="text/javascript" src="jquery.flot.resize.js"></script> -->
     <link href="toggle-switch.css" rel="stylesheet">
     <link href="examples.css" rel="stylesheet">
     <link href="style.css" rel="stylesheet">
-    <title>Quantified Pony: the Fitbit for horses</title>   
+
+    <title>Quantified Pony: the Fitbit for horses</title>  
   </head>
 <body>
+
     <!-- Toggle switch -->
     <div class="switch-toggle well">
         <input id="observe" name="view" type="radio" checked>
@@ -25,28 +27,35 @@
         <label for="ride" onclick="toggleswitch('ride')">Ride</label>
         <a class="btn btn-primary"></a>
     </div>
+
     <!-- Content divs -->
+
     <!-- Start Mode -->
     <div id="start_mode">
         <center>
-        <p>Welcome to Quantified Pony: the Fitbit for horses!</p>
-        <p>Use the toggle above to select your mode.</p>
+        <p>Welcome to Quantified Pony:
+        <br>the Fitbit for horses!</p>
+        <p>Toggle to select your mode.</p>
         </center>
     </div>
+
     <!-- Observe Mode -->
     <div id="observe_mode">
         <center>
         <p>Welcome to observe mode.</p>
-        <div id="placeholder" style="width:100%; height:300px;"></div>
+        <div id="placeholder" style="width:100%;height:300px;"></div>
         </center>
     </div>
+
     <!-- Ride Mode -->
     <div id="ride_mode">
         <center>
         <p>Welcome to ride mode.</p>
+        <p><button id='start_timer_button'>start</button></p>
         <div id="sensor_data"></div>
         </center>
     </div>
+
     <!-- Scripts -->
     <script>
     // Control text display based on toggle position
@@ -67,10 +76,63 @@
 
     // Pull data off sensors
     function sensorTest(){
-        // Set up data collection with column titles
-        var sensorData = [];
-        sensorData.push(['milliseconds', 'x', 'y', 'z', 'alpha', 'beta', 'gamma']); 
-        console.log("sensor test");
+        // set up sensor data object
+        var sensorData = {
+            "milliseconds": [],
+            "x": [],
+            "y": [],
+            "z": [],
+            "alpha": [],
+            "beta": [],
+            "gamma": []
+        };
+
+        console.log("successfully created the SensorData dictionary");
+
+        // Set up start/stop button
+        $('#start_timer_button').on('click', function(e){
+            e.preventDefault();
+            if ($(this).hasClass('stop_button')) {
+                    $(this).text('start').removeClass('stop_button');
+                    // Insert what happens when user presses stop button
+                    gyro.stopTracking();
+                    document.getElementById("sensor_data").innerHTML = "Tracking stopped.";
+                    console.log(sensorData);
+            } else {
+                $(this).text('stop').addClass('stop_button');
+                // Insert what happens when user presses start button
+                gyro.frequency = 10;
+                milliseconds = 0;
+                gyro.startTracking(function(o) {
+                    document.getElementById("sensor_data").innerHTML =
+                        "x: " + o.x + "<br/>"
+                        + "y: " + o.y + "<br/>"
+                        + "z: " + o.z + "<br/>"
+                        + "alpha: " + o.alpha + "<br/>" 
+                        + "beta: " + o.beta + "<br/>" 
+                        + "gamma: " + o.gamma
+                        sensorData.milliseconds.push(milliseconds);
+                        sensorData.x.push(o.x);
+                        sensorData.y.push(o.y);
+                        sensorData.z.push(o.z);
+                        sensorData.alpha.push(o.alpha);
+                        sensorData.beta.push(o.beta);
+                        sensorData.gamma.push(o.gamma);
+                        milliseconds = milliseconds + gyro.frequency;
+                });
+            }
+        });
+    }
+
+        // Not sure what this part does
+        /*
+        $('.stop_button').on('click', function(e) {
+            e.preventDefault();
+            alert('stopping!');
+        });
+        */
+
+    function collectData(sensorData){
         if(window.DeviceMotionEvent==undefined){
             document.getElementById("sensor_data").innerHTML = "Sorry, no sensor data found."
         }
@@ -86,9 +148,16 @@
                     + "z: " + o.z + "<br/>" 
                     + "alpha: " + o.alpha + "<br/>" 
                     + "beta: " + o.beta + "<br/>" 
-                    + "gamma: " + o.gamma;
-                sensorData.push([milliseconds, o.x, o.y, o.z, o.alpha, o.beta, o.gamma]);
-                // console.log(sensorData[-1]);
+                    + "gamma: " + o.gamma
+                sensorData.milliseconds.push(milliseconds);
+                sensorData.x.push(o.x);
+                sensorData.y.push(o.y);
+                sensorData.z.push(o.z);
+                sensorData.alpha.push(o.alpha);
+                sensorData.beta.push(o.beta);
+                sensorData.gamma.push(o.gamma);
+                //sensorData.push([milliseconds, o.x, o.y, o.z, o.alpha, o.beta, o.gamma]);
+                //console.log(sensorData);
                 milliseconds = milliseconds + gyro.frequency;
             });
         }
@@ -96,6 +165,7 @@
 
     // Chart dummy data using Flot
     function sensorPlot(){
+
         $(function () {
             // var time = [0, 10, 20, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140];
 
