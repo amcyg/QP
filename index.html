@@ -96,7 +96,14 @@
                     $(this).text('start').removeClass('stop_button');
                     // Insert what happens when user presses stop button
                     gyro.stopTracking();
-                    document.getElementById("sensor_data").innerHTML = "Tracking stopped.";
+                    document.getElementById("sensor_data").innerHTML = 
+                        "Tracking stopped. <br/>" 
+                        + "x: " + sensorData.x[x.length] + "<br/>"
+                        + "y: " + sensorData.y[y.length-1] + "<br/>"
+                        + "z: " + sensorData.z[z.length-1] + "<br/>"
+                        + "alpha: " + sensorData.alpha[alpha.length-1] + "<br/>"
+                        + "beta: " + sensorData.beta[beta.length-1] + "<br/>"
+                        + "gamma: " + sensorData.gamma[gamma.length-1];
                     console.log(sensorData);
             } else {
                 $(this).text('stop').addClass('stop_button');
