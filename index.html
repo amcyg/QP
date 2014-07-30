@@ -77,8 +77,22 @@
         }
     }
 
+
     // Pull data off sensors
     function sensorTest(){
+        // Set up Firebase reference for sensor data
+        var firebaseSensorData = new Firebase("https://quantifiedpony.firebaseio.com/");
+
+        firebaseSensorData.set({
+          milliseconds: [],
+          x: [],
+          y: [],
+          z: [],
+          alpha: [],
+          beta: [],
+          gamma: []
+        });
+
         // set up sensor data object
         var sensorData = {
             "milliseconds": [],
@@ -120,7 +134,8 @@
                         + "z: " + o.z + "<br/>"
                         + "alpha: " + o.alpha + "<br/>" 
                         + "beta: " + o.beta + "<br/>" 
-                        + "gamma: " + o.gamma
+                        + "gamma: " + o.gamma;
+                    
                         sensorData.milliseconds.push(milliseconds);
                         sensorData.x.push(o.x);
                         sensorData.y.push(o.y);
@@ -128,6 +143,20 @@
                         sensorData.alpha.push(o.alpha);
                         sensorData.beta.push(o.beta);
                         sensorData.gamma.push(o.gamma);
+
+                        x_data = sensorData.x[sensorData.x.length-1];
+                        console.log(x_data);
+
+                        firebaseSensorData.push({
+                          milliseconds: [milliseconds],
+                          x: [x_data],
+                          y: [o.y],
+                          z: [o.z],
+                          alpha: [o.alpha],
+                          beta: [o.beta],
+                          gamma: [o.gamma]
+                        });
+
                         milliseconds = milliseconds + gyro.frequency;
                 });
             }
