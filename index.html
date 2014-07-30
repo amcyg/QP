@@ -144,17 +144,14 @@
                         sensorData.beta.push(o.beta);
                         sensorData.gamma.push(o.gamma);
 
-                        x_data = sensorData.x[sensorData.x.length-1];
-                        console.log(x_data);
-
                         firebaseSensorData.push({
-                          milliseconds: [milliseconds],
-                          x: [x_data],
-                          y: [o.y],
-                          z: [o.z],
-                          alpha: [o.alpha],
-                          beta: [o.beta],
-                          gamma: [o.gamma]
+                            milliseconds: [milliseconds],
+                            x: [o.x],
+                            y: [o.y],
+                            z: [o.z],
+                            alpha: [o.alpha],
+                            beta: [o.beta],
+                            gamma: [o.gamma]
                         });
 
                         milliseconds = milliseconds + gyro.frequency;
