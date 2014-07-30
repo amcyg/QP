@@ -17,6 +17,10 @@ back to observe mode, only to work again if you cycle through the toggle again.
 
 */
 
+// Global variable?
+// Set up Firebase reference for sensor data
+var firebaseSensorData = new Firebase("https://quantifiedpony.firebaseio.com/");
+
 // Control text display based on toggle position
 function toggleswitch(state){
     if(state=='observe'){
@@ -37,9 +41,6 @@ function toggleswitch(state){
 // Pull data off sensors
 function sensorTest(){
 
-    // Set up Firebase reference for sensor data
-    var firebaseSensorData = new Firebase("https://quantifiedpony.firebaseio.com/");
-
     firebaseSensorData.set({
         milliseconds: [],
         x: [],
@@ -52,7 +53,7 @@ function sensorTest(){
 
     console.log("successfully created firebaseSensorData object")
 
-    // set up local sensor data object (for temporary testing purposes)
+    // Set up local sensor data object (for temporary testing purposes)
     var sensorData = {
         "milliseconds": [],
         "x": [],
@@ -69,18 +70,18 @@ function sensorTest(){
     $('#start_timer_button').on('click', function(e){
         e.preventDefault();
         if ($(this).hasClass('stop_button')) {
-                $(this).text('start').removeClass('stop_button');
-                // Insert what happens when user presses stop button
-                gyro.stopTracking();
-                document.getElementById("sensor_data").innerHTML = 
-                    "Tracking stopped. <br/>" 
-                    + "x: " + sensorData.x[sensorData.x.length-1] + "<br/>"
-                    + "y: " + sensorData.y[sensorData.y.length-1] + "<br/>"
-                    + "z: " + sensorData.z[sensorData.z.length-1] + "<br/>"
-                    + "alpha: " + sensorData.alpha[sensorData.alpha.length-1] + "<br/>"
-                    + "beta: " + sensorData.beta[sensorData.beta.length-1] + "<br/>"
-                    + "gamma: " + sensorData.gamma[sensorData.gamma.length-1];
-                console.log(sensorData);
+            $(this).text('start').removeClass('stop_button');
+            // Insert what happens when user presses stop button
+            gyro.stopTracking();
+            document.getElementById("sensor_data").innerHTML = 
+                "Tracking stopped. <br/>" 
+                + "x: " + sensorData.x[sensorData.x.length-1] + "<br/>"
+                + "y: " + sensorData.y[sensorData.y.length-1] + "<br/>"
+                + "z: " + sensorData.z[sensorData.z.length-1] + "<br/>"
+                + "alpha: " + sensorData.alpha[sensorData.alpha.length-1] + "<br/>"
+                + "beta: " + sensorData.beta[sensorData.beta.length-1] + "<br/>"
+                + "gamma: " + sensorData.gamma[sensorData.gamma.length-1];
+            console.log(sensorData);
         } else {
             $(this).text('stop').addClass('stop_button');
             // Insert what happens when user presses start button
@@ -150,8 +151,61 @@ function collectData(sensorData){
     }
 }
 
-// Chart dummy data using Flot
+
 function sensorPlot(){
+    var x_plot = [];
+    var y_plot = [];
+    var z_plot = [];
+    var alpha_plot = [];
+    var beta_plot = [];
+    var gamma_plot = [];
+
+    function grabFirebaseData(){
+        // Grab data from Firebase
+        firebaseSensorData.on('child_added', function(snapshot) {
+            var readData = snapshot.val();
+            x_read = readData.x;
+            y_read = readData.y;
+            z_read = readData.z;
+            alpha_read = readData.alpha;
+            beta_read = readData.beta;
+            gamma_read = readData.gamma;
+            ms_read = readData.milliseconds;
+
+            console.log(x_read, y_read, z_read, alpha_read, beta_read, gamma_read, ms_read);
+
+            // Push to plotting data in x, y format (time, sensor value)
+            x_plot.push([ms_read, x_read]);
+            y_plot.push([ms_read, y_read]);
+            z_plot.push([ms_read, z_read]);
+            alpha_plot.push([ms_read, alpha_read]);
+            beta_plot.push([ms_read, beta_read]);
+            gamma_plot.push([ms_read, gamma_read]);
+
+            console.log(x_plot);
+
+            document.getElementById("read_data").innerHTML =
+                    "x: " + x_read + "<br/>"
+                    + "y: " + y_read + "<br/>"
+                    + "z: " + z_read + "<br/>"
+                    + "alpha: " + alpha_read + "<br/>" 
+                    + "beta: " + beta_read + "<br/>" 
+                    + "gamma: " + gamma_read;
+        });
+
+
+    }
+
+    grabFirebaseData();
+    
+
+
+
+
+
+
+
+    // Example simple, resizeable Flot chart
 
     $(function () {
         var x = [[0, -3.761590156], [10, -3.761590156], [20, -3.761590156], [30, -3.761590156], [40, -0.726490566], 
