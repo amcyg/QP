@@ -17,7 +17,6 @@ back to observe mode, only to work again if you cycle through the toggle again.
 
 */
 
-
 // Control text display based on toggle position
 function toggleswitch(state){
     if(state=='observe'){
@@ -42,16 +41,18 @@ function sensorTest(){
     var firebaseSensorData = new Firebase("https://quantifiedpony.firebaseio.com/");
 
     firebaseSensorData.set({
-      milliseconds: [],
-      x: [],
-      y: [],
-      z: [],
-      alpha: [],
-      beta: [],
-      gamma: []
+        milliseconds: [],
+        x: [],
+        y: [],
+        z: [],
+        alpha: [],
+        beta: [],
+        gamma: []
     });
 
-    // set up sensor data object
+    console.log("successfully created firebaseSensorData object")
+
+    // set up local sensor data object (for temporary testing purposes)
     var sensorData = {
         "milliseconds": [],
         "x": [],
@@ -62,7 +63,7 @@ function sensorTest(){
         "gamma": []
     };
 
-    console.log("successfully created the SensorData dictionary");
+    console.log("successfully created the sensorData object");
 
     // Set up start/stop button
     $('#start_timer_button').on('click', function(e){
@@ -143,8 +144,7 @@ function collectData(sensorData){
             sensorData.alpha.push(o.alpha);
             sensorData.beta.push(o.beta);
             sensorData.gamma.push(o.gamma);
-            //sensorData.push([milliseconds, o.x, o.y, o.z, o.alpha, o.beta, o.gamma]);
-            //console.log(sensorData);
+            
             milliseconds = milliseconds + gyro.frequency;
         });
     }
@@ -154,8 +154,6 @@ function collectData(sensorData){
 function sensorPlot(){
 
     $(function () {
-        // var time = [0, 10, 20, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140];
-
         var x = [[0, -3.761590156], [10, -3.761590156], [20, -3.761590156], [30, -3.761590156], [40, -0.726490566], 
                     [50, -0.726490566], [60,-0.726490566], [70, -0.726490566], [80, -3.806630856], [90, -3.806630856],
                     [100, -3.806630856], [110, -3.806630856], [120, -3.806630856], [130, -4.948665048]];
