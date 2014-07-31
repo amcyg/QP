@@ -15,8 +15,8 @@ button.stop_button {
     padding: 5px 29px 5px 29px !important;
 }
 
-#start_timer_button {
-    background: #389838;
+#background {
+    start_timer_button: #389838;
     border: none;
     color: white;
     border-radius: 10px;

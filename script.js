@@ -1,27 +1,33 @@
 /* TO DO
 
-x1) learn how to "read" Firebase data
-x2) make sensor data visible in observer mode (via text)
-x3) send sensor data to Flot real time plot
-4) redirect data to python script for step counting
-5) send scalar accelerometer points to Flot real time plot
-6) display step counts in real time
-7) figure out how to save "runs"
-8) figure out how to "replay" runs
+accomplished:
+x) learn how to "read" Firebase data
+x) make sensor data visible in observer mode (via text)
+x) send sensor data to Flot real time plot
+x) fix seizure inducing quality of the real time plot
 
-Other things:
-*Address random bug, where start/stop button won't work if you toggle
-back to observe mode, only to work again if you cycle through the toggle again.
+**AHHH THE SHINY BUTTON CSS ISN'T WORKING ANYMORE***
 
-*Address seizure inducing quality of the real time data plot
+o) Set a "start/stop" button Firebase reference in observer mode to control data collection
+o) redirect data to python script for step counting
+o) send scalar accelerometer points to Flot real time plot
+o) display step counts in real time
+o) figure out how to save "runs"
+o) figure out how to "replay" runs
 
-*Ask for a code review - refactor code to make it more modular?
+Random bugs:
+Start/stop button won't work if you toggle to observe mode and come back to ride mode. Will magically
+fix itself when you toggle between modes again. 
+
+Shiny button CSS isn't working anymore. :()
+
 
 */
 
-// Global variable?
+
 // Set up Firebase reference for sensor data
 var firebaseSensorData = new Firebase("https://quantifiedpony.firebaseio.com/");
+var timeout;
 
 // Control text display based on toggle position
 function toggleswitch(state){
@@ -68,10 +74,11 @@ function sensorTest(){
 
     console.log("successfully created the sensorData object");
 
-    // Set up start/stop button
+   // Set up start/stop button
     $('#start_timer_button').on('click', function(e){
-        e.preventDefault();
         if ($(this).hasClass('stop_button')) {
+            // stop graph updates
+            clearTimeout(timeout);
             $(this).text('start').removeClass('stop_button');
             // Insert what happens when user presses stop button
             gyro.stopTracking();
@@ -212,10 +219,9 @@ function sensorPlot(){
             plot.setData([x_plot, y_plot, z_plot]);
 
             plot.setupGrid();
-            // Since the axes don't change, we don't need to call plot.setupGrid()
 
             plot.draw();
-            setTimeout(update, 10); // in milliseconds
+            timeout = setTimeout(update, 10); // in milliseconds
         }
 
         update();
