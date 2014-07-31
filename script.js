@@ -153,6 +153,20 @@ function sensorPlot(){
     var gamma_plot = [];
 
     // Set up Firebase-linked remote start/stop button
+    $('#mirror_start_timer_button').on('click', function(e){
+        // If user presses 'stop' button, do this!
+        if ($(this).hasClass('stop_button')) {
+            // Set Firebase button reference to 'stop'
+            firebaseButton.set('stop');
+            $(this).text('start').removeClass('stop_button');
+  
+        // If user presses 'start' button, do this!
+        } else {
+            // Set Firebase button reference to 'start'
+            firebaseButton.set('start');
+            $(this).text('stop').addClass('stop_button');
+        }
+    });
 
     
     // Grab data from Firebase
