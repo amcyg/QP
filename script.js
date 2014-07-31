@@ -19,7 +19,7 @@ Random bugs:
 Start/stop button won't work if you toggle to observe mode and come back to ride mode. Will magically
 fix itself when you toggle between modes again. 
 
-Shiny button CSS isn't working anymore. :()
+Shiny button CSS isn't working anymore. :(
 
 
 */
@@ -30,6 +30,35 @@ var firebaseSensorData = firebaseMain.child('data');
 
 // Set timeout to prevent plot 'seizure mode'
 var timeout;
+
+// Default Firebase button state
+firebaseButton.set('stop');
+
+// Set up sensor data collection
+firebaseSensorData.set({
+    milliseconds: [],
+    x: [],
+    y: [],
+    z: [],
+    alpha: [],
+    beta: [],
+    gamma: []
+});
+
+console.log("successfully created firebaseSensorData object")
+
+// Set up local sensor data object (for temporary testing purposes)
+var sensorData = {
+    "milliseconds": [],
+    "x": [],
+    "y": [],
+    "z": [],
+    "alpha": [],
+    "beta": [],
+    "gamma": []
+};
+
+console.log("successfully created the sensorData object");
 
 // Control text display based on toggle position
 function toggleswitch(state){
@@ -49,31 +78,6 @@ function toggleswitch(state){
 
 // RIDE MODE: Pull data off sensor
 function sensorTest(){
-
-    firebaseSensorData.set({
-        milliseconds: [],
-        x: [],
-        y: [],
-        z: [],
-        alpha: [],
-        beta: [],
-        gamma: []
-    });
-
-    console.log("successfully created firebaseSensorData object")
-
-    // Set up local sensor data object (for temporary testing purposes)
-    var sensorData = {
-        "milliseconds": [],
-        "x": [],
-        "y": [],
-        "z": [],
-        "alpha": [],
-        "beta": [],
-        "gamma": []
-    };
-
-    console.log("successfully created the sensorData object");
 
    firebaseButton.on("value", function(snapshot){
         // For STOP button
