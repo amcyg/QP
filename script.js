@@ -24,9 +24,13 @@ Shiny button CSS isn't working anymore. :()
 
 */
 
+// Set up Firebase reference for start/stop button
+var firebaseButton = new Firebase("https://quantifiedpony.firebaseio.com/");
 
 // Set up Firebase reference for sensor data
 var firebaseSensorData = new Firebase("https://quantifiedpony.firebaseio.com/");
+
+// Set timeout to prevent plot 'seizure mode'
 var timeout;
 
 // Control text display based on toggle position
@@ -75,11 +79,14 @@ function sensorTest(){
 
    // Set up start/stop button
     $('#start_timer_button').on('click', function(e){
+        // If user presses 'stop' button, do this!
         if ($(this).hasClass('stop_button')) {
-            // stop graph updates
-            clearTimeout(timeout);
+            // Set Firebase button reference to 'stop'
+            firebaseButton.set('stop');
             $(this).text('start').removeClass('stop_button');
-            // Insert what happens when user presses stop button
+            // Stop graph updates
+            clearTimeout(timeout);
+            // Stop pulling data from sensor
             gyro.stopTracking();
             // Display last collected raw data point upon pressing 'stop'
             document.getElementById("sensor_data").innerHTML = 
@@ -91,9 +98,11 @@ function sensorTest(){
                 + "beta: " + sensorData.beta[sensorData.beta.length-1] + "<br/>"
                 + "gamma: " + sensorData.gamma[sensorData.gamma.length-1];
             console.log(sensorData);
+        // If user presses 'start' button, do this!
         } else {
+            // Set Firebase button reference to 'start'
+            firebaseButton.set('start');
             $(this).text('stop').addClass('stop_button');
-            // Insert what happens when user presses start button
             gyro.frequency = 10;
             milliseconds = 0;
             gyro.startTracking(function(o) {
@@ -142,6 +151,9 @@ function sensorPlot(){
     var alpha_plot = [];
     var beta_plot = [];
     var gamma_plot = [];
+
+    // Set up Firebase-linked remote start/stop button
+
     
     // Grab data from Firebase
     firebaseSensorData.on('child_added', function(snapshot) {
