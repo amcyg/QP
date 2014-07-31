@@ -1,8 +1,8 @@
 /* TO DO
 
-1) learn how to "read" Firebase data
-2) make sensor data visible in observer mode (via text)
-3) send sensor data to Flot real time plot
+x1) learn how to "read" Firebase data
+x2) make sensor data visible in observer mode (via text)
+x3) send sensor data to Flot real time plot
 4) redirect data to python script for step counting
 5) send scalar accelerometer points to Flot real time plot
 6) display step counts in real time
@@ -12,6 +12,8 @@
 Other things:
 *Address random bug, where start/stop button won't work if you toggle
 back to observe mode, only to work again if you cycle through the toggle again.
+
+*Address seizure inducing quality of the real time data plot
 
 *Ask for a code review - refactor code to make it more modular?
 
@@ -171,31 +173,6 @@ function sensorPlot(){
         gamma_read = readData.gamma;
         ms_read = readData.milliseconds;
 
-        console.log(x_read, y_read, z_read, alpha_read, beta_read, gamma_read, ms_read);
-
-        // Push to plotting data in x, y format (time, sensor value)
-        x_plot.push([ms_read, x_read]);
-        y_plot.push([ms_read, y_read]);
-        z_plot.push([ms_read, z_read]);
-        alpha_plot.push([ms_read, alpha_read]);
-        beta_plot.push([ms_read, beta_read]);
-        gamma_plot.push([ms_read, gamma_read]);
-
-        // Plot Flot chart
-        var plot = $.plot("#placeholder", [ x_plot, y_plot, z_plot ], {
-            series: {
-                shadowSize: 0   // Drawing is faster without shadows
-            },
-            yaxis: {
-                min: -10,
-                max: 20
-            },
-            xaxis: {
-                show: true
-            }
-
-        });
-        
         // Display data in text format
         document.getElementById("read_data").innerHTML =
                 "x: " + x_read + "<br/>"
@@ -205,19 +182,48 @@ function sensorPlot(){
                 + "beta: " + beta_read + "<br/>" 
                 + "gamma: " + gamma_read;
 
+        // Push to plotting data in x, y format (time, sensor value)
+        x_plot.push([ms_read, x_read]);
+        y_plot.push([ms_read, y_read]);
+        z_plot.push([ms_read, z_read]);
+        alpha_plot.push([ms_read, alpha_read]);
+        beta_plot.push([ms_read, beta_read]);
+        gamma_plot.push([ms_read, gamma_read]);
+
+        });
         
-    });
+        // Plot data
+        var plot = $.plot("#placeholder", [ x_plot, y_plot, z_plot ], {
+            series: {
+                shadowSize: 0   // Drawing is faster without shadows
+            },
+            yaxis: {
+                min: -20,
+                max: 20
+            },
+            xaxis: {
+                show: true
+            }
 
+        });
 
-    
+        function update() {
 
+            plot.setData([x_plot, y_plot, z_plot]);
 
+            plot.setupGrid();
+            // Since the axes don't change, we don't need to call plot.setupGrid()
 
+            plot.draw();
+            setTimeout(update, 10); // in milliseconds
+        }
 
-
+        update();
 
 
     // Example simple, resizeable Flot chart
+
+    /*
 
     $(function () {
         var x = [[0, -3.761590156], [10, -3.761590156], [20, -3.761590156], [30, -3.761590156], [40, -0.726490566], 
@@ -237,5 +243,8 @@ function sensorPlot(){
         window.onresize = function(event) {
             $.plot($("#placeholder"), [ x, y, z ]);
         }
+
+
     });
+    */
 }
