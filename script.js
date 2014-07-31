@@ -23,12 +23,10 @@ Shiny button CSS isn't working anymore. :()
 
 
 */
-
-// Set up Firebase reference for start/stop button
-var firebaseButton = new Firebase("https://quantifiedpony.firebaseio.com/");
-
-// Set up Firebase reference for sensor data
-var firebaseSensorData = new Firebase("https://quantifiedpony.firebaseio.com/");
+// Set up Firebase references (main + button + data)
+var firebaseMain = new Firebase("https://quantifiedpony.firebaseio.com/");
+var firebaseButton = firebaseMain.child('button');
+var firebaseSensorData = firebaseMain.child('data');
 
 // Set timeout to prevent plot 'seizure mode'
 var timeout;
@@ -77,13 +75,9 @@ function sensorTest(){
 
     console.log("successfully created the sensorData object");
 
-   // Set up start/stop button
-    $('#start_timer_button').on('click', function(e){
-        // If user presses 'stop' button, do this!
-        if ($(this).hasClass('stop_button')) {
-            // Set Firebase button reference to 'stop'
-            firebaseButton.set('stop');
-            $(this).text('start').removeClass('stop_button');
+   firebaseButton.on("value", function(snapshot){
+        // For STOP button
+        if(snapshot.val()==='stop'){
             // Stop graph updates
             clearTimeout(timeout);
             // Stop pulling data from sensor
@@ -98,11 +92,9 @@ function sensorTest(){
                 + "beta: " + sensorData.beta[sensorData.beta.length-1] + "<br/>"
                 + "gamma: " + sensorData.gamma[sensorData.gamma.length-1];
             console.log(sensorData);
-        // If user presses 'start' button, do this!
-        } else {
-            // Set Firebase button reference to 'start'
-            firebaseButton.set('start');
-            $(this).text('stop').addClass('stop_button');
+        }
+        // For START button
+        if(snapshot.val()==='start'){
             gyro.frequency = 10;
             milliseconds = 0;
             gyro.startTracking(function(o) {
@@ -139,6 +131,7 @@ function sensorTest(){
                     // Should I implement this differently?
                     milliseconds = milliseconds + gyro.frequency;
             });
+        
         }
     });
 }
