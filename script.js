@@ -14,6 +14,7 @@ o) send scalar accelerometer points to Flot real time plot
 o) display step counts in real time
 o) figure out how to save "runs"
 o) figure out how to "replay" runs
+o) OFFLINE FIREBASE (just in case signal is poor during outdoor barn testing)
 
 Random bugs:
 Start/stop button won't work if you toggle to observe mode and come back to ride mode. Will magically
@@ -27,6 +28,7 @@ Shiny button CSS isn't working anymore. :(
 var firebaseMain = new Firebase("https://quantifiedpony.firebaseio.com/");
 var firebaseButton = firebaseMain.child('button');
 var firebaseSensorData = firebaseMain.child('data');
+var firebaseSavedRuns = firebaseMain.child('saved');
 
 // Set timeout to prevent plot 'seizure mode'
 var timeout;
@@ -37,6 +39,7 @@ firebaseButton.set('stop');
 // Set up sensor data collection
 firebaseSensorData.set({
     milliseconds: [],
+    time_in_ms: [],
     x: [],
     y: [],
     z: [],
@@ -50,6 +53,7 @@ console.log("successfully created firebaseSensorData object")
 // Set up local sensor data object (for temporary testing purposes)
 var sensorData = {
     "milliseconds": [],
+    "time in ms": [],
     "x": [],
     "y": [],
     "z": [],
@@ -109,7 +113,8 @@ function sensorTest(){
                     + "z: " + o.z + "<br/>"
                     + "alpha: " + o.alpha + "<br/>" 
                     + "beta: " + o.beta + "<br/>" 
-                    + "gamma: " + o.gamma;
+                    + "gamma: " + o.gamma + "<br/>"
+                    + "time in ms: " + Date.now();
                 
                     // Push data to local JS object for easy reference (will probably remove this later)
                     sensorData.milliseconds.push(milliseconds);
@@ -119,6 +124,7 @@ function sensorTest(){
                     sensorData.alpha.push(o.alpha);
                     sensorData.beta.push(o.beta);
                     sensorData.gamma.push(o.gamma);
+                    sensorData.gamma.push(Date.now());
 
                     // Push data to Firebase reference
                     firebaseSensorData.push({
@@ -128,7 +134,8 @@ function sensorTest(){
                         z: [o.z],
                         alpha: [o.alpha],
                         beta: [o.beta],
-                        gamma: [o.gamma]
+                        gamma: [o.gamma],
+                        time_in_ms: [Date.now()]
                     });
 
                     // Time is measured incrementally, not using datetime - might not be accurate
