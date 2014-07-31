@@ -159,44 +159,56 @@ function sensorPlot(){
     var alpha_plot = [];
     var beta_plot = [];
     var gamma_plot = [];
+    
+    // Grab data from Firebase
+    firebaseSensorData.on('child_added', function(snapshot) {
+        var readData = snapshot.val();
+        x_read = readData.x;
+        y_read = readData.y;
+        z_read = readData.z;
+        alpha_read = readData.alpha;
+        beta_read = readData.beta;
+        gamma_read = readData.gamma;
+        ms_read = readData.milliseconds;
 
-    function grabFirebaseData(){
-        // Grab data from Firebase
-        firebaseSensorData.on('child_added', function(snapshot) {
-            var readData = snapshot.val();
-            x_read = readData.x;
-            y_read = readData.y;
-            z_read = readData.z;
-            alpha_read = readData.alpha;
-            beta_read = readData.beta;
-            gamma_read = readData.gamma;
-            ms_read = readData.milliseconds;
+        console.log(x_read, y_read, z_read, alpha_read, beta_read, gamma_read, ms_read);
 
-            console.log(x_read, y_read, z_read, alpha_read, beta_read, gamma_read, ms_read);
+        // Push to plotting data in x, y format (time, sensor value)
+        x_plot.push([ms_read, x_read]);
+        y_plot.push([ms_read, y_read]);
+        z_plot.push([ms_read, z_read]);
+        alpha_plot.push([ms_read, alpha_read]);
+        beta_plot.push([ms_read, beta_read]);
+        gamma_plot.push([ms_read, gamma_read]);
 
-            // Push to plotting data in x, y format (time, sensor value)
-            x_plot.push([ms_read, x_read]);
-            y_plot.push([ms_read, y_read]);
-            z_plot.push([ms_read, z_read]);
-            alpha_plot.push([ms_read, alpha_read]);
-            beta_plot.push([ms_read, beta_read]);
-            gamma_plot.push([ms_read, gamma_read]);
+        // Plot Flot chart
+        var plot = $.plot("#placeholder", [ x_plot, y_plot, z_plot ], {
+            series: {
+                shadowSize: 0   // Drawing is faster without shadows
+            },
+            yaxis: {
+                min: -10,
+                max: 20
+            },
+            xaxis: {
+                show: true
+            }
 
-            console.log(x_plot);
-
-            document.getElementById("read_data").innerHTML =
-                    "x: " + x_read + "<br/>"
-                    + "y: " + y_read + "<br/>"
-                    + "z: " + z_read + "<br/>"
-                    + "alpha: " + alpha_read + "<br/>" 
-                    + "beta: " + beta_read + "<br/>" 
-                    + "gamma: " + gamma_read;
         });
+        
+        // Display data in text format
+        document.getElementById("read_data").innerHTML =
+                "x: " + x_read + "<br/>"
+                + "y: " + y_read + "<br/>"
+                + "z: " + z_read + "<br/>"
+                + "alpha: " + alpha_read + "<br/>" 
+                + "beta: " + beta_read + "<br/>" 
+                + "gamma: " + gamma_read;
+
+        
+    });
 
 
-    }
-
-    grabFirebaseData();
     
 
 
