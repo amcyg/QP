@@ -45,8 +45,7 @@ function toggleswitch(state){
     }
 }
 
-
-// Pull data off sensors
+// RIDE MODE: Pull data off sensor
 function sensorTest(){
 
     firebaseSensorData.set({
@@ -135,38 +134,7 @@ function sensorTest(){
     });
 }
 
-
-function collectData(sensorData){
-    if(window.DeviceMotionEvent==undefined){
-        document.getElementById("sensor_data").innerHTML = "Sorry, no sensor data found."
-    }
-    else { 
-        gyro.frequency = 10; // 10 ms = 100 Hz
-        milliseconds = 0;
-        gyro.startTracking(function(o) {
-            // o.x, o.y, o.z for accelerometer
-            // o.alpha, o.beta, o.gamma for gyro
-            document.getElementById("sensor_data").innerHTML = 
-                "x: " + o.x + "<br/>" 
-                + "y: " + o.y + "<br/>" 
-                + "z: " + o.z + "<br/>" 
-                + "alpha: " + o.alpha + "<br/>" 
-                + "beta: " + o.beta + "<br/>" 
-                + "gamma: " + o.gamma
-            sensorData.milliseconds.push(milliseconds);
-            sensorData.x.push(o.x);
-            sensorData.y.push(o.y);
-            sensorData.z.push(o.z);
-            sensorData.alpha.push(o.alpha);
-            sensorData.beta.push(o.beta);
-            sensorData.gamma.push(o.gamma);
-            
-            milliseconds = milliseconds + gyro.frequency;
-        });
-    }
-}
-
-
+// OBSERVE MODE: Plot data collected by sensor in ride mode
 function sensorPlot(){
     var x_plot = [];
     var y_plot = [];
