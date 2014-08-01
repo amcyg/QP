@@ -5,16 +5,18 @@ x) learn how to "read" Firebase data
 x) make sensor data visible in observer mode (via text)
 x) send sensor data to Flot real time plot
 x) fix seizure inducing quality of the real time plot
+x) Set a "start/stop" button Firebase reference in observer mode to control data collection
 
 **AHHH THE SHINY BUTTON CSS ISN'T WORKING ANYMORE***
 
-o) Set a "start/stop" button Firebase reference in observer mode to control data collection
+o) figure out how to save "runs"
+o) figure out how to "replay" runs
+o) figure out how to pause data collection
 o) redirect data to python script for step counting
 o) send scalar accelerometer points to Flot real time plot
 o) display step counts in real time
-o) figure out how to save "runs"
-o) figure out how to "replay" runs
 o) OFFLINE FIREBASE (just in case signal is poor during outdoor barn testing)
+o) sound recording
 
 Random bugs:
 Start/stop button won't work if you toggle to observe mode and come back to ride mode. Will magically
@@ -24,17 +26,19 @@ Shiny button CSS isn't working anymore. :(
 
 
 */
-// Set up Firebase references (main + button + data)
+// Set up Firebase references (main + buttons + data)
 var firebaseMain = new Firebase("https://quantifiedpony.firebaseio.com/");
-var firebaseButton = firebaseMain.child('button');
+var firebaseStartStop = firebaseMain.child('buttons/startstop');
 var firebaseSensorData = firebaseMain.child('data');
 var firebaseSavedRuns = firebaseMain.child('saved');
+var firebaseSave = firebaseMain.child('buttons/save');
 
 // Set timeout to prevent plot 'seizure mode'
 var timeout;
 
 // Default Firebase button state
-firebaseButton.set('stop');
+firebaseStartStop.set('stop');
+firebaseSave.set(false);
 
 // Set up sensor data collection
 firebaseSensorData.set({
@@ -48,7 +52,17 @@ firebaseSensorData.set({
     gamma: []
 });
 
-console.log("successfully created firebaseSensorData object")
+// Set up saved data collection
+firebaseSavedRuns.set({
+    milliseconds: [],
+    time_in_ms: [],
+    x: [],
+    y: [],
+    z: [],
+    alpha: [],
+    beta: [],
+    gamma: []
+});
 
 // Set up local sensor data object (for temporary testing purposes)
 var sensorData = {
@@ -62,50 +76,47 @@ var sensorData = {
     "gamma": []
 };
 
-console.log("successfully created the sensorData object");
-
 // Control text display based on toggle position
-function toggleswitch(state){
-    if(state=='observe'){
-        document.getElementById("observe_mode").style.display="block";
-        document.getElementById("ride_mode").style.display="none";
-        document.getElementById("start_mode").style.display="none";
+function toggleswitch(state) {
+    if (state === 'observe') {
+        document.getElementById("observe_mode").style.display = "block";
+        document.getElementById("ride_mode").style.display = "none";
+        document.getElementById("start_mode").style.display = "none";
         sensorPlot();
-    }
-    else if(state=='ride'){
-        document.getElementById("observe_mode").style.display="none";
-        document.getElementById("ride_mode").style.display="block";
-        document.getElementById("start_mode").style.display="none";
+    } else if (state === 'ride') {
+        document.getElementById("observe_mode").style.display = "none";
+        document.getElementById("ride_mode").style.display = "block";
+        document.getElementById("start_mode").style.display = "none";
         sensorTest();
     }
 }
 
 // RIDE MODE: Pull data off sensor
-function sensorTest(){
+function sensorTest() {
 
-   firebaseButton.on("value", function(snapshot){
+    // Set up Firebase listener for button state
+    firebaseStartStop.on("value", function (snapshot) {
         // For STOP button
-        if(snapshot.val()==='stop'){
+        if (snapshot.val() === 'stop') {
             // Stop graph updates
             clearTimeout(timeout);
             // Stop pulling data from sensor
             gyro.stopTracking();
             // Display last collected raw data point upon pressing 'stop'
             document.getElementById("sensor_data").innerHTML = 
-                "Tracking stopped. <br/>" 
-                + "x: " + sensorData.x[sensorData.x.length-1] + "<br/>"
-                + "y: " + sensorData.y[sensorData.y.length-1] + "<br/>"
-                + "z: " + sensorData.z[sensorData.z.length-1] + "<br/>"
-                + "alpha: " + sensorData.alpha[sensorData.alpha.length-1] + "<br/>"
-                + "beta: " + sensorData.beta[sensorData.beta.length-1] + "<br/>"
-                + "gamma: " + sensorData.gamma[sensorData.gamma.length-1];
-            console.log(sensorData);
+                "Tracking stopped.<br/>" 
+                + "x: " + sensorData.x[sensorData.x.length - 1] + "<br/>"
+                + "y: " + sensorData.y[sensorData.y.length - 1] + "<br/>"
+                + "z: " + sensorData.z[sensorData.z.length - 1] + "<br/>"
+                + "alpha: " + sensorData.alpha[sensorData.alpha.length - 1] + "<br/>"
+                + "beta: " + sensorData.beta[sensorData.beta.length - 1] + "<br/>"
+                + "gamma: " + sensorData.gamma[sensorData.gamma.length - 1];
         }
         // For START button
-        if(snapshot.val()==='start'){
+        if (snapshot.val() === 'start') {
             gyro.frequency = 10;
             milliseconds = 0;
-            gyro.startTracking(function(o) {
+            gyro.startTracking(function (o) {
                 // Display raw data in text format (will probably remove this later)
                 document.getElementById("sensor_data").innerHTML =
                     "x: " + o.x + "<br/>"
@@ -115,40 +126,40 @@ function sensorTest(){
                     + "beta: " + o.beta + "<br/>" 
                     + "gamma: " + o.gamma + "<br/>"
                     + "time in ms: " + Date.now();
-                
-                    // Push data to local JS object for easy reference (will probably remove this later)
-                    sensorData.milliseconds.push(milliseconds);
-                    sensorData.x.push(o.x);
-                    sensorData.y.push(o.y);
-                    sensorData.z.push(o.z);
-                    sensorData.alpha.push(o.alpha);
-                    sensorData.beta.push(o.beta);
-                    sensorData.gamma.push(o.gamma);
-                    sensorData.gamma.push(Date.now());
+                    
+                // Push data to local JS object for easy reference (will probably remove this later)
+                sensorData.milliseconds.push(milliseconds);
+                sensorData.x.push(o.x);
+                sensorData.y.push(o.y);
+                sensorData.z.push(o.z);
+                sensorData.alpha.push(o.alpha);
+                sensorData.beta.push(o.beta);
+                sensorData.gamma.push(o.gamma);
+                sensorData.gamma.push(Date.now());
 
-                    // Push data to Firebase reference
-                    firebaseSensorData.push({
-                        milliseconds: [milliseconds],
-                        x: [o.x],
-                        y: [o.y],
-                        z: [o.z],
-                        alpha: [o.alpha],
-                        beta: [o.beta],
-                        gamma: [o.gamma],
-                        time_in_ms: [Date.now()]
-                    });
+                // Push data to Firebase reference
+                firebaseSensorData.push({
+                    milliseconds: [milliseconds],
+                    x: [o.x],
+                    y: [o.y],
+                    z: [o.z],
+                    alpha: [o.alpha],
+                    beta: [o.beta],
+                    gamma: [o.gamma],
+                    time_in_ms: [Date.now()]
+                });
 
-                    // Time is measured incrementally, not using datetime - might not be accurate
-                    // Should I implement this differently?
-                    milliseconds = milliseconds + gyro.frequency;
-            });
+                // Time is measured incrementally, not using datetime - might not be accurate
+                // Should I implement this differently?
+                milliseconds = milliseconds + gyro.frequency;
+        });
         
         }
     });
 }
 
 // OBSERVE MODE: Plot data collected by sensor in ride mode
-function sensorPlot(){
+function sensorPlot() {
     var x_plot = [];
     var y_plot = [];
     var z_plot = [];
@@ -161,13 +172,13 @@ function sensorPlot(){
         // If user presses 'stop' button, do this!
         if ($(this).hasClass('stop_button')) {
             // Set Firebase button reference to 'stop'
-            firebaseButton.set('stop');
+            firebaseStartStop.set('stop');
             $(this).text('start').removeClass('stop_button');
   
         // If user presses 'start' button, do this!
         } else {
             // Set Firebase button reference to 'start'
-            firebaseButton.set('start');
+            firebaseStartStop.set('start');
             $(this).text('stop').addClass('stop_button');
         }
     });
