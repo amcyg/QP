@@ -31,14 +31,12 @@ var firebaseMain = new Firebase("https://quantifiedpony.firebaseio.com/");
 var firebaseStartStop = firebaseMain.child('buttons/startstop');
 var firebaseSensorData = firebaseMain.child('data');
 var firebaseSavedRuns = firebaseMain.child('saved');
-var firebaseSave = firebaseMain.child('buttons/save');
 
 // Set timeout to prevent plot 'seizure mode'
 var timeout;
 
 // Default Firebase button state
 firebaseStartStop.set('stop');
-firebaseSave.set(false);
 
 // Set up sensor data collection
 firebaseSensorData.set({
@@ -53,16 +51,13 @@ firebaseSensorData.set({
 });
 
 // Set up saved data collection
+/*
 firebaseSavedRuns.set({
-    milliseconds: [],
-    time_in_ms: [],
-    x: [],
-    y: [],
-    z: [],
-    alpha: [],
-    beta: [],
-    gamma: []
+    file_name: [],
+    json_string: [],
+    time_in_ms: []
 });
+*/
 
 // Set up local sensor data object (for temporary testing purposes)
 var sensorData = {
@@ -111,6 +106,11 @@ function sensorTest() {
                 + "alpha: " + sensorData.alpha[sensorData.alpha.length - 1] + "<br/>"
                 + "beta: " + sensorData.beta[sensorData.beta.length - 1] + "<br/>"
                 + "gamma: " + sensorData.gamma[sensorData.gamma.length - 1];
+            // If data was collected, save it to Firebase
+            if (sensorData.milliseconds.length > 0) {
+                saveData(sensorData);
+            }
+
         }
         // For START button
         if (snapshot.val() === 'start') {
@@ -118,6 +118,7 @@ function sensorTest() {
             milliseconds = 0;
             gyro.startTracking(function (o) {
                 // Display raw data in text format (will probably remove this later)
+                var now = Date.now();
                 document.getElementById("sensor_data").innerHTML =
                     "x: " + o.x + "<br/>"
                     + "y: " + o.y + "<br/>"
@@ -125,8 +126,10 @@ function sensorTest() {
                     + "alpha: " + o.alpha + "<br/>" 
                     + "beta: " + o.beta + "<br/>" 
                     + "gamma: " + o.gamma + "<br/>"
-                    + "time in ms: " + Date.now();
-                    
+                    + "time in ms: " + now;
+
+                console.log(sensorData);
+
                 // Push data to local JS object for easy reference (will probably remove this later)
                 sensorData.milliseconds.push(milliseconds);
                 sensorData.x.push(o.x);
@@ -135,7 +138,7 @@ function sensorTest() {
                 sensorData.alpha.push(o.alpha);
                 sensorData.beta.push(o.beta);
                 sensorData.gamma.push(o.gamma);
-                sensorData.gamma.push(Date.now());
+                sensorData.gamma.push(now);
 
                 // Push data to Firebase reference
                 firebaseSensorData.push({
@@ -146,11 +149,9 @@ function sensorTest() {
                     alpha: [o.alpha],
                     beta: [o.beta],
                     gamma: [o.gamma],
-                    time_in_ms: [Date.now()]
+                    time_in_ms: [now]
                 });
 
-                // Time is measured incrementally, not using datetime - might not be accurate
-                // Should I implement this differently?
                 milliseconds = milliseconds + gyro.frequency;
         });
         
@@ -241,4 +242,85 @@ function sensorPlot() {
 
         update();
 
+}
+
+function saveData( sensorData ) {
+
+    // Convert sensorData to JSON string
+    stringifiedSensorData = JSON.stringify(sensorData);
+
+    // Compress using LZW encoding
+    compressedSensorData = lzw_encode(stringifiedSensorData);
+
+    // Push to Firebase
+    firebaseSavedRuns.push({
+        file_name: "dummy file name",
+        json_string: compressedSensorData,
+        time_in_ms: "dummy time stamp"
+    });
+}
+
+function readData( inputFileName ) {
+
+    // Pull from Firebase
+
+    // Decompress using LZW encoding
+
+    // Convert JSON string to raw sensorData (JSON.parse)
+}
+
+// Experiment in compression
+// URL: https://stackoverflow.com/questions/294297/javascript-implementation-of-gzip
+
+// LZW-compress a string
+function lzw_encode(s) {
+    var dict = {};
+    var data = (s + "").split("");
+    var out = [];
+    var currChar;
+    var phrase = data[0];
+    var code = 256;
+    for (var i=1; i<data.length; i++) {
+        currChar=data[i];
+        if (dict[phrase + currChar] != null) {
+            phrase += currChar;
+        }
+        else {
+            out.push(phrase.length > 1 ? dict[phrase] : phrase.charCodeAt(0));
+            dict[phrase + currChar] = code;
+            code++;
+            phrase=currChar;
+        }
+    }
+    out.push(phrase.length > 1 ? dict[phrase] : phrase.charCodeAt(0));
+    for (var i=0; i<out.length; i++) {
+        out[i] = String.fromCharCode(out[i]);
+    }
+    return out.join("");
+}
+
+// Decompress an LZW-encoded string
+function lzw_decode(s) {
+    var dict = {};
+    var data = (s + "").split("");
+    var currChar = data[0];
+    var oldPhrase = currChar;
+    var out = [currChar];
+    var code = 256;
+    var phrase;
+    for (var i=1; i<data.length; i++) {
+        var currCode = data[i].charCodeAt(0);
+        if (currCode < 256) {
+            phrase = data[i];
+        }
+        else {
+           phrase = dict[currCode] ? dict[currCode] : (oldPhrase + currChar);
+        }
+        out.push(phrase);
+        currChar = phrase.charAt(0);
+        dict[code] = oldPhrase + currChar;
+        code++;
+        oldPhrase = phrase;
+    }
+    return out.join("");
 }
