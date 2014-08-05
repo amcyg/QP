@@ -148,6 +148,7 @@ function sensorPlot() {
     var x_plot = [];
     var y_plot = [];
     var z_plot = [];
+    var acceleration_plot = [];
     var alpha_plot = [];
     var beta_plot = [];
     var gamma_plot = [];
@@ -179,13 +180,20 @@ function sensorPlot() {
         });
         document.getElementById("previous_runs").innerHTML = html;
     });
-    
+
+    var pointsArray = [];
+
+    firebaseStartStop.on("value", function (snapshot) {
+        if (snapshot.val() == 'start') {
+            pointsArray = [];
+        }
+    });
 
     var lastFrame = new Date().getTime();
 
     // Grab data from Firebase
-    firebaseSensorData.on('child_added', function(snapshot) {
-        var readData = snapshot.val();
+    firebaseSensorData.on('child_added', function(point_snapshot) {
+        var readData = point_snapshot.val();
         x_read = readData.x;
         y_read = readData.y;
         z_read = readData.z;
@@ -203,10 +211,15 @@ function sensorPlot() {
                 + "beta: " + beta_read + "<br/>" 
                 + "gamma: " + gamma_read;
 
+        // Push to an array of point records
+        pointsArray.push(readData);
+        var annotatedWithSteps = countSteps(pointsArray);
+
         // Push to plotting data in x, y format (time, sensor value)
         x_plot.push([ms_read, x_read]);
         y_plot.push([ms_read, y_read]);
         z_plot.push([ms_read, z_read]);
+        acceleration_plot.push([ms_read, annotatedWithSteps[annotatedWithSteps.length - 1].acceleration]);
         alpha_plot.push([ms_read, alpha_read]);
         beta_plot.push([ms_read, beta_read]);
         gamma_plot.push([ms_read, gamma_read]);
@@ -218,7 +231,7 @@ function sensorPlot() {
     });
         
         // Plot data
-        var plot = $.plot("#placeholder", [ x_plot, y_plot, z_plot ], {
+        var plot = $.plot("#placeholder", [ x_plot, y_plot, z_plot, acceleration_plot ], {
             series: {
                 shadowSize: 0   // Drawing is faster without shadows
             },
@@ -233,7 +246,7 @@ function sensorPlot() {
         });
 
         function update() {
-            plot.setData([x_plot, y_plot, z_plot]);
+            plot.setData([x_plot, y_plot, z_plot, acceleration_plot ]);
 
             plot.setupGrid();
 
