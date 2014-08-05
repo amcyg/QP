@@ -42,16 +42,7 @@ firebaseStartStop.set('stop');
 
 
 // Set up sensor data collection
-firebaseSensorData.set({
-    milliseconds: [],
-    time_in_ms: [],
-    x: [],
-    y: [],
-    z: [],
-    alpha: [],
-    beta: [],
-    gamma: []
-});
+firebaseSensorData.set([]);
 
 // Set up local sensor data object (for temporary testing purposes)
 var sensorData = {
@@ -135,14 +126,14 @@ function sensorTest() {
 
                 // Push data to Firebase reference
                 firebaseSensorData.push({
-                    milliseconds: [milliseconds],
-                    x: [o.x],
-                    y: [o.y],
-                    z: [o.z],
-                    alpha: [o.alpha],
-                    beta: [o.beta],
-                    gamma: [o.gamma],
-                    time_in_ms: [now]
+                    milliseconds: milliseconds,
+                    x: o.x,
+                    y: o.y,
+                    z: o.z,
+                    alpha: o.alpha,
+                    beta: o.beta,
+                    gamma: o.gamma,
+                    time_in_ms: now
                 });
 
                 milliseconds = milliseconds + gyro.frequency;
@@ -242,10 +233,7 @@ function sensorPlot() {
         });
 
         function update() {
-            var indexStart = Math.max(x_plot.length-500, 0);
-            var indexEnd = x_plot.length;
-
-            plot.setData([x_plot.slice(indexStart, indexEnd), y_plot.slice(indexStart, indexEnd), z_plot.slice(indexStart, indexEnd)]);
+            plot.setData([x_plot, y_plot, z_plot]);
 
             plot.setupGrid();
 
@@ -284,12 +272,6 @@ function readData( snapshotID ) {
 
         var x_plot = [], y_plot = [], z_plot = [];
 
-        for (var i = 0; i < parsed.milliseconds.length; i++) {
-            x_plot.push([parsed.milliseconds[i], parsed.x[i]]);
-            y_plot.push([parsed.milliseconds[i], parsed.y[i]]);
-            z_plot.push([parsed.milliseconds[i], parsed.z[i]]);
-        };
-
         var plot = $.plot("#placeholder", [ x_plot, y_plot, z_plot ], {
             series: {
                 shadowSize: 0   // Drawing is faster without shadows
@@ -299,7 +281,9 @@ function readData( snapshotID ) {
                 max: 20
             },
             xaxis: {
-                show: true
+                show: true,
+                min: parsed.milliseconds[0],
+                max: parsed.milliseconds[parsed.milliseconds.length-1]
             }
 
         });
@@ -308,6 +292,22 @@ function readData( snapshotID ) {
 
         plot.draw();
 
+        var i = 0;
+
+        var timer = setInterval(function() {
+            x_plot.push([parsed.milliseconds[i], parsed.x[i]]);
+            y_plot.push([parsed.milliseconds[i], parsed.y[i]]);
+            z_plot.push([parsed.milliseconds[i], parsed.z[i]]);
+
+            plot.setData([x_plot, y_plot, z_plot]);
+            plot.setupGrid();
+            plot.draw();
+
+            i += 1;
+            if (i == parsed.milliseconds.length) {
+                clearInterval(timer);
+            }
+        }, 10);
     });  
 
 }
