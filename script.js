@@ -6,10 +6,11 @@ x) make sensor data visible in observer mode (via text)
 x) send sensor data to Flot real time plot
 x) fix seizure inducing quality of the real time plot
 x) Set a "start/stop" button Firebase reference in observer mode to control data collection
+x) figure out how to save "runs"
 
 **AHHH THE SHINY BUTTON CSS ISN'T WORKING ANYMORE***
 
-o) figure out how to save "runs"
+
 o) figure out how to "replay" runs
 o) figure out how to pause data collection
 o) redirect data to python script for step counting
@@ -31,12 +32,14 @@ var firebaseMain = new Firebase("https://quantifiedpony.firebaseio.com/");
 var firebaseStartStop = firebaseMain.child('buttons/startstop');
 var firebaseSensorData = firebaseMain.child('data');
 var firebaseSavedRuns = firebaseMain.child('saved');
+var firebaseFileName = firebaseMain.child('filename');
 
 // Set timeout to prevent plot 'seizure mode'
 var timeout;
 
 // Default Firebase button state
 firebaseStartStop.set('stop');
+
 
 // Set up sensor data collection
 firebaseSensorData.set({
@@ -50,19 +53,10 @@ firebaseSensorData.set({
     gamma: []
 });
 
-// Set up saved data collection
-/*
-firebaseSavedRuns.set({
-    file_name: [],
-    json_string: [],
-    time_in_ms: []
-});
-*/
-
 // Set up local sensor data object (for temporary testing purposes)
 var sensorData = {
     "milliseconds": [],
-    "time in ms": [],
+    "time_in_ms": [],
     "x": [],
     "y": [],
     "z": [],
@@ -108,10 +102,11 @@ function sensorTest() {
                 + "gamma: " + sensorData.gamma[sensorData.gamma.length - 1];
             // If data was collected, save it to Firebase
             if (sensorData.milliseconds.length > 0) {
+                // Set Firebase save button to true
                 saveData(sensorData);
             }
-
         }
+
         // For START button
         if (snapshot.val() === 'start') {
             gyro.frequency = 10;
@@ -128,8 +123,6 @@ function sensorTest() {
                     + "gamma: " + o.gamma + "<br/>"
                     + "time in ms: " + now;
 
-                console.log(sensorData);
-
                 // Push data to local JS object for easy reference (will probably remove this later)
                 sensorData.milliseconds.push(milliseconds);
                 sensorData.x.push(o.x);
@@ -138,7 +131,7 @@ function sensorTest() {
                 sensorData.alpha.push(o.alpha);
                 sensorData.beta.push(o.beta);
                 sensorData.gamma.push(o.gamma);
-                sensorData.gamma.push(now);
+                sensorData.time_in_ms.push(now);
 
                 // Push data to Firebase reference
                 firebaseSensorData.push({
@@ -179,12 +172,26 @@ function sensorPlot() {
         // If user presses 'start' button, do this!
         } else {
             // Set Firebase button reference to 'start'
+            firebaseFileName.set(prompt("File name: "));
             firebaseStartStop.set('start');
             $(this).text('stop').addClass('stop_button');
         }
     });
 
+    // Set up showing and hiding previous runs
+    firebaseSavedRuns.once('value', function(snapshot){
+        var html = ""
+        snapshot.forEach( function(childSnapshot) { 
+            var file_name = childSnapshot.val().file_name;
+            console.log(file_name);
+            html += "<a onclick='readData(\"" + childSnapshot.name() + "\")'>" + file_name + "</a>";
+        });
+        document.getElementById("previous_runs").innerHTML = html;
+    });
     
+
+    var lastFrame = new Date().getTime();
+
     // Grab data from Firebase
     firebaseSensorData.on('child_added', function(snapshot) {
         var readData = snapshot.val();
@@ -213,7 +220,11 @@ function sensorPlot() {
         beta_plot.push([ms_read, beta_read]);
         gamma_plot.push([ms_read, gamma_read]);
 
-        });
+        if (new Date().getTime() - lastFrame > 25) {
+            update();
+            lastFrame = new Date().getTime();
+        };
+    });
         
         // Plot data
         var plot = $.plot("#placeholder", [ x_plot, y_plot, z_plot ], {
@@ -231,15 +242,16 @@ function sensorPlot() {
         });
 
         function update() {
+            var indexStart = Math.max(x_plot.length-500, 0);
+            var indexEnd = x_plot.length;
 
-            plot.setData([x_plot, y_plot, z_plot]);
+            plot.setData([x_plot.slice(indexStart, indexEnd), y_plot.slice(indexStart, indexEnd), z_plot.slice(indexStart, indexEnd)]);
 
             plot.setupGrid();
 
             plot.draw();
-            timeout = setTimeout(update, 10); // in milliseconds
+            // timeout = setTimeout(update, 10); // in milliseconds
         }
-
         update();
 
 }
@@ -253,21 +265,53 @@ function saveData( sensorData ) {
     compressedSensorData = lzw_encode(stringifiedSensorData);
 
     // Push to Firebase
-    firebaseSavedRuns.push({
-        file_name: "dummy file name",
-        json_string: compressedSensorData,
-        time_in_ms: "dummy time stamp"
+    firebaseFileName.once("value", function(snapshot) {
+        firebaseSavedRuns.push({
+            file_name: snapshot.val(),
+            json_string: compressedSensorData,
+            time_in_ms: new Date().getTime()
+        });
     });
 }
 
-function readData( inputFileName ) {
-
+function readData( snapshotID ) {
     // Pull from Firebase
+    firebaseSavedRuns.child(snapshotID).once("value", function(snapshot) {
+        // Decompress using LZW encoding
+        var decoded = lzw_decode(snapshot.child('json_string').val());
+        // Convert JSON string to raw sensorData (JSON.parse)
+        var parsed = JSON.parse(decoded);
 
-    // Decompress using LZW encoding
+        var x_plot = [], y_plot = [], z_plot = [];
 
-    // Convert JSON string to raw sensorData (JSON.parse)
+        for (var i = 0; i < parsed.milliseconds.length; i++) {
+            x_plot.push([parsed.milliseconds[i], parsed.x[i]]);
+            y_plot.push([parsed.milliseconds[i], parsed.y[i]]);
+            z_plot.push([parsed.milliseconds[i], parsed.z[i]]);
+        };
+
+        var plot = $.plot("#placeholder", [ x_plot, y_plot, z_plot ], {
+            series: {
+                shadowSize: 0   // Drawing is faster without shadows
+            },
+            yaxis: {
+                min: -20,
+                max: 20
+            },
+            xaxis: {
+                show: true
+            }
+
+        });
+
+        plot.setupGrid();
+
+        plot.draw();
+
+    });  
+
 }
+
 
 // Experiment in compression
 // URL: https://stackoverflow.com/questions/294297/javascript-implementation-of-gzip

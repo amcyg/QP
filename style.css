@@ -29,3 +29,7 @@ button.stop_button {
         opacity: 1;
     }
 }
+
+#previous_runs a {
+	display: block;
+}
