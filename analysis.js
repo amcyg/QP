@@ -44,7 +44,7 @@ function collectUpperCurveData ( acceleration, UPPER ) {
 function findUpperMax ( steps, UPPER ) {
 	var upperMax = Math.max.apply(Math, UPPER);
 	// console.log("Max of upper curve: " , upperMax);
-	if (upperMax > 11){
+	if (upperMax > 13.75){
 		steps = steps + 1;
 	}
 	return steps;

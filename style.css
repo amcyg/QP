@@ -1,9 +1,25 @@
-#observe_mode{
+#observe_mode {
 	display: none;
 }
 
-#ride_mode{
+#ride_mode {
 	display: none;
+}
+
+body.splash {
+    background: url('qpbg.jpg');
+    background-size: auto 100%;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+#previous_runs_div {
+    top: 15px;
+}
+
+#logo {
+    padding-top: 20px;
+    width: 85%;
 }
 
 html, body {
@@ -15,8 +31,9 @@ button.stop_button {
     padding: 5px 29px 5px 29px !important;
 }
 
-#background {
-    start_timer_button: #389838;
+#start_timer_button {
+    background: #389838;
+    font-size: 25px;
     border: none;
     color: white;
     border-radius: 10px;
@@ -30,6 +47,9 @@ button.stop_button {
     }
 }
 
-#previous_runs a {
-	display: block;
+div.file span.glyphicon {
+    margin-left: 5px;
+    font-size: 12px;
+    line-height: 25px;
+    color: #B52F2F;
 }

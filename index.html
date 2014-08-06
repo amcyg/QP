@@ -24,7 +24,7 @@
 
     <title>Quantified Pony: the Fitbit for horses</title>  
   </head>
-<body>
+<body class="splash">
 
     <!-- Toggle switch -->
     <div class="switch-toggle well">
@@ -40,29 +40,27 @@
     <!-- Start Mode -->
     <div id="start_mode">
         <center>
-        <p>Welcome to Quantified Pony:
-        <br>the Fitbit for horses!</p>
-        <p>Toggle to select your mode.</p>
+        <img id="logo" src="qp logo.png">
         </center>
     </div>
 
     <!-- Observe Mode -->
     <div id="observe_mode">
         <center>
-        <p>Welcome to observe mode.</p>
-        <p><button id='mirror_start_timer_button'>start</button></p>
+        <p><button id='start_timer_button'>start</button></p>
+        <div id="show_steps"></div>
         <div id="read_data"></div>
         <div id="placeholder" style="width:100%;height:300px;"></div>
+        <div id="previous_runs_container">
         <p>Previous runs:</p>
         <div id="previous_runs"></div>
+        </div>
         </center>
     </div>
 
     <!-- Ride Mode -->
     <div id="ride_mode">
         <center>
-        <p>Welcome to ride mode.</p>
-        <!-- <p><button id='start_timer_button'>start</button></p> -->
         <div id="sensor_data"></div>
         </center>
     </div>

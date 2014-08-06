@@ -58,6 +58,8 @@ var sensorData = {
 
 // Control text display based on toggle position
 function toggleswitch(state) {
+    $('body').removeClass('splash');
+
     if (state === 'observe') {
         document.getElementById("observe_mode").style.display = "block";
         document.getElementById("ride_mode").style.display = "none";
@@ -111,8 +113,7 @@ function sensorTest() {
                     + "z: " + o.z + "<br/>"
                     + "alpha: " + o.alpha + "<br/>" 
                     + "beta: " + o.beta + "<br/>" 
-                    + "gamma: " + o.gamma + "<br/>"
-                    + "time in ms: " + now;
+                    + "gamma: " + o.gamma;
 
                 // Push data to local JS object for easy reference (will probably remove this later)
                 sensorData.milliseconds.push(milliseconds);
@@ -154,7 +155,7 @@ function sensorPlot() {
     var gamma_plot = [];
 
     // Set up Firebase-linked remote start/stop button
-    $('#mirror_start_timer_button').on('click', function(e){
+    $('#start_timer_button').on('click', function(e){
         // If user presses 'stop' button, do this!
         if ($(this).hasClass('stop_button')) {
             // Set Firebase button reference to 'stop'
@@ -164,19 +165,19 @@ function sensorPlot() {
         // If user presses 'start' button, do this!
         } else {
             // Set Firebase button reference to 'start'
-            firebaseFileName.set(prompt("File name: "));
+            firebaseFileName.set(prompt("File name: ", "Demo Day Test"));
             firebaseStartStop.set('start');
             $(this).text('stop').addClass('stop_button');
         }
     });
 
     // Set up showing and hiding previous runs
-    firebaseSavedRuns.once('value', function(snapshot){
+    firebaseSavedRuns.on('value', function(snapshot){
         var html = ""
         snapshot.forEach( function(childSnapshot) { 
             var file_name = childSnapshot.val().file_name;
             console.log(file_name);
-            html += "<a onclick='readData(\"" + childSnapshot.name() + "\")'>" + file_name + "</a>";
+            html += "<div class='file'><a onclick='readData(\"" + childSnapshot.name() + "\")'>" + file_name + "</a><span onclick='firebaseDelete(\"" + childSnapshot.name() + "\")' class=\"glyphicon glyphicon-remove\"></span></div>";
         });
         document.getElementById("previous_runs").innerHTML = html;
     });
@@ -206,15 +207,8 @@ function sensorPlot() {
         var acceleration = x[0];
         var steps = x[1];
 
-        // Display data in text format
-        document.getElementById("read_data").innerHTML =
-                "<b>Steps: " + steps + "</b><br>"
-                + "x: " + x_read + "<br/>"
-                + "y: " + y_read + "<br/>"
-                + "z: " + z_read + "<br/>"
-                + "alpha: " + alpha_read + "<br/>" 
-                + "beta: " + beta_read + "<br/>" 
-                + "gamma: " + gamma_read;
+        // Display steps
+        document.getElementById("show_steps").innerHTML = "<b>Steps: " + steps + "</b>";
 
         // Push to plotting data in x, y format (time, sensor value)
         x_plot.push([ms_read, x_read]);
@@ -237,8 +231,9 @@ function sensorPlot() {
                 shadowSize: 0   // Drawing is faster without shadows
             },
             yaxis: {
-                min: -20,
-                max: 20
+                // min: -20,
+                // max: 20
+                // commented out so that Flot adjusts y-axis automatically
             },
             xaxis: {
                 show: true
@@ -276,7 +271,13 @@ function saveData( sensorData ) {
     });
 }
 
+function firebaseDelete( snapshotID ) {
+    firebaseSavedRuns.child(snapshotID).remove();
+}
+
 function readData( snapshotID ) {
+    var stepCounter = new StepCounter();
+
     // Pull from Firebase
     firebaseSavedRuns.child(snapshotID).once("value", function(snapshot) {
         // Decompress using LZW encoding
@@ -284,15 +285,16 @@ function readData( snapshotID ) {
         // Convert JSON string to raw sensorData (JSON.parse)
         var parsed = JSON.parse(decoded);
 
-        var x_plot = [], y_plot = [], z_plot = [];
+        var x_plot = [], y_plot = [], z_plot = [], a_plot = [];
 
-        var plot = $.plot("#placeholder", [ x_plot, y_plot, z_plot ], {
+        var plot = $.plot("#placeholder", [ x_plot, y_plot, z_plot, a_plot ], {
             series: {
                 shadowSize: 0   // Drawing is faster without shadows
             },
             yaxis: {
-                min: -20,
-                max: 20
+                // min: -20,
+                // max: 20
+                // commented out so that Flot adjusts y-axis automatically
             },
             xaxis: {
                 show: true,
@@ -313,7 +315,15 @@ function readData( snapshotID ) {
             y_plot.push([parsed.milliseconds[i], parsed.y[i]]);
             z_plot.push([parsed.milliseconds[i], parsed.z[i]]);
 
-            plot.setData([x_plot, y_plot, z_plot]);
+            var temp = stepCounter.push({x: parsed.x[i], y: parsed.y[i], z: parsed.z[i]})
+            var acceleration = temp[0];
+            var steps = temp[1];
+
+            document.getElementById("show_steps").innerHTML = "<b>Steps: " + steps + "</b>";
+
+            a_plot.push([parsed.milliseconds[i], acceleration]);
+
+            plot.setData([x_plot, y_plot, z_plot, a_plot]);
             plot.setupGrid();
             plot.draw();
 

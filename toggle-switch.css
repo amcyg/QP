@@ -38,7 +38,7 @@
 	 */
   .switch-light {
     display: block;
-    height: 30px;
+    height: 60px;
     /* Outline the toggles when the inputs are focused
 	 */
     position: relative;
@@ -60,7 +60,7 @@
       -moz-transition: all 0.3s ease-out;
       transition: all 0.3s ease-out; }
     .switch-light label, .switch-light > span {
-      line-height: 30px;
+      line-height: 60px;
       vertical-align: middle; }
     .switch-light input:focus ~ a, .switch-light input:focus + label {
       outline: 1px dotted #888; }
@@ -104,7 +104,7 @@
       padding: 0; }
   .switch-toggle {
     display: block;
-    height: 30px;
+    height: 60px;
     /* Outline the toggles when the inputs are focused
 	 */
     position: relative;
@@ -122,7 +122,7 @@
       -moz-transition: all 0.3s ease-out;
       transition: all 0.3s ease-out; }
     .switch-toggle label, .switch-toggle > span {
-      line-height: 30px;
+      line-height: 60px;
       vertical-align: middle; }
     .switch-toggle input:focus ~ a, .switch-toggle input:focus + label {
       outline: 1px dotted #888; }
