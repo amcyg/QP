@@ -181,11 +181,11 @@ function sensorPlot() {
         document.getElementById("previous_runs").innerHTML = html;
     });
 
-    var pointsArray = [];
+    var stepCounter = null;
 
     firebaseStartStop.on("value", function (snapshot) {
         if (snapshot.val() == 'start') {
-            pointsArray = [];
+            stepCounter = new StepCounter();
         }
     });
 
@@ -202,24 +202,25 @@ function sensorPlot() {
         gamma_read = readData.gamma;
         ms_read = readData.milliseconds;
 
+        var x = stepCounter.push(readData);
+        var acceleration = x[0];
+        var steps = x[1];
+
         // Display data in text format
         document.getElementById("read_data").innerHTML =
-                "x: " + x_read + "<br/>"
+                "<b>Steps: " + steps + "</b><br>"
+                + "x: " + x_read + "<br/>"
                 + "y: " + y_read + "<br/>"
                 + "z: " + z_read + "<br/>"
                 + "alpha: " + alpha_read + "<br/>" 
                 + "beta: " + beta_read + "<br/>" 
                 + "gamma: " + gamma_read;
 
-        // Push to an array of point records
-        pointsArray.push(readData);
-        var annotatedWithSteps = countSteps(pointsArray);
-
         // Push to plotting data in x, y format (time, sensor value)
         x_plot.push([ms_read, x_read]);
         y_plot.push([ms_read, y_read]);
         z_plot.push([ms_read, z_read]);
-        acceleration_plot.push([ms_read, annotatedWithSteps[annotatedWithSteps.length - 1].acceleration]);
+        acceleration_plot.push([ms_read, acceleration]);
         alpha_plot.push([ms_read, alpha_read]);
         beta_plot.push([ms_read, beta_read]);
         gamma_plot.push([ms_read, gamma_read]);

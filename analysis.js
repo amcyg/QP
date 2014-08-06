@@ -1,36 +1,28 @@
-function countSteps ( inputData ) {
-	var AVG_EWMA = 9.78;
-	var UPPER = [];
-	var outputData = [];
-	var STATE = 'DOWN';
-	var steps = 0;
-	for (var i = 0; i < inputData.length; i++) {
-		var row = inputData[i];
-		var acceleration = convertToScalar(row);
-		STATE = checkState(acceleration, AVG_EWMA);
-		console.log(STATE);
-		if (STATE === 'UP') {
-			console.log(steps);
-			collectUpperCurveData(acceleration, UPPER);
-		}
-		if (STATE === 'DOWN') {
-			if (UPPER.length > 0) {
-				steps = findUpperMax(steps, UPPER);
-				UPPER = []; 
-			}
-		}
+var AVG_EWMA = 9.78;
 
-		outputData.push({
-			x: row.x,
-			y: row.y,
-			z: row.z,
-			acceleration: acceleration,
-			steps: steps
-		})
+function StepCounter() {
+	this.STATE = 'DOWN';
+	this.steps = 0;
+	this.UPPER = [];
+}
 
+StepCounter.prototype.push = function(row) {
+	var acceleration = convertToScalar(row);
+	this.STATE = checkState(acceleration, AVG_EWMA);
+	// console.log(this.STATE);
+
+	if (this.STATE === 'UP') {
+		// console.log(this.steps);
+		collectUpperCurveData(acceleration, this.UPPER);
 	}
-	
-	return outputData;
+	if (this.STATE === 'DOWN') {
+		if (this.UPPER.length > 0) {
+			this.steps = findUpperMax(this.steps, this.UPPER);
+			this.UPPER = []; 
+		}
+	}
+
+	return [acceleration, this.steps];
 }
 
 function checkState( acceleration, AVG_EWMA ) {
@@ -45,14 +37,14 @@ function convertToScalar ( row ) {
 }
 
 function collectUpperCurveData ( acceleration, UPPER ) {
-	console.log("It got into the collect upper curve function!");
+	// console.log("It got into the collect upper curve function!");
 	UPPER.push(acceleration);
 }
 
 function findUpperMax ( steps, UPPER ) {
-	upperMax = Math.max.apply(Math, UPPER);
-	console.log("Max of upper curve: " , upperMAX);
-	if (upperMax > 10){
+	var upperMax = Math.max.apply(Math, UPPER);
+	// console.log("Max of upper curve: " , upperMax);
+	if (upperMax > 11){
 		steps = steps + 1;
 	}
 	return steps;
