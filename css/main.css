@@ -8,7 +8,7 @@
 
 body.splash {
     background: url('../img/qpbg.jpg');
-    background-size: auto 100%;
+    background-size: 100% 100%;
     background-repeat: no-repeat;
     background-position: center;
 }
@@ -23,7 +23,7 @@ body.splash {
 }
 
 html, body {
-    height: 100%; /* make the percentage height on placeholder work */
+    height: 100%; 
 }
 
 button.stop_button {
