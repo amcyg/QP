@@ -17,6 +17,7 @@ However, since this app is open to everyone (user auth has not been implemented 
 ## Can I deploy this app myself?
 Yes! However, you'll need to use Firebase for the real-time backend. 
 Read the Firebase docs here: https://www.firebase.com/docs/hosting/guide/deploying.html
+You will also need to update the Firebase references in the main.js file. 
 
 ## What features are up next? 
 * Re-implementing the app in native iOS to take advantage of ad-hoc networks. Realistically, most horseback riding environments don't have access to wifi or even cellular data range, which is a severe limitation. 
