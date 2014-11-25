@@ -1,4 +1,6 @@
-var AVG_EWMA = 9.78;
+// Analyzes steps by using the estimated weighted moving average (EWMA) method (counts peaks above EWMA line). 
+
+var AVG_EWMA = 9.78; // this value was obtained through experimentation
 
 function StepCounter() {
 	this.STATE = 'DOWN';

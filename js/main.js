@@ -1,32 +1,3 @@
-/* TO DO
-
-accomplished:
-x) learn how to "read" Firebase data
-x) make sensor data visible in observer mode (via text)
-x) send sensor data to Flot real time plot
-x) fix seizure inducing quality of the real time plot
-x) Set a "start/stop" button Firebase reference in observer mode to control data collection
-x) figure out how to save "runs"
-
-**AHHH THE SHINY BUTTON CSS ISN'T WORKING ANYMORE***
-
-
-o) figure out how to "replay" runs
-o) figure out how to pause data collection
-o) redirect data to python script for step counting
-o) send scalar accelerometer points to Flot real time plot
-o) display step counts in real time
-o) OFFLINE FIREBASE (just in case signal is poor during outdoor barn testing)
-o) sound recording
-
-Random bugs:
-Start/stop button won't work if you toggle to observe mode and come back to ride mode. Will magically
-fix itself when you toggle between modes again. 
-
-Shiny button CSS isn't working anymore. :(
-
-
-*/
 // Set up Firebase references (main + buttons + data)
 var firebaseMain = new Firebase("https://quantifiedpony.firebaseio.com/");
 var firebaseStartStop = firebaseMain.child('buttons/startstop');
