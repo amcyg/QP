@@ -190,37 +190,37 @@ function sensorPlot() {
         beta_plot.push([ms_read, beta_read]);
         gamma_plot.push([ms_read, gamma_read]);
 
+        // Update Flot chart every 25 ms
         if (new Date().getTime() - lastFrame > 25) {
             update();
             lastFrame = new Date().getTime();
         };
     });
-        
-        // Plot data
-        var plot = $.plot("#placeholder", [ x_plot, y_plot, z_plot, acceleration_plot ], {
-            series: {
-                shadowSize: 0   // Drawing is faster without shadows
-            },
-            yaxis: {
-                // min: -20,
-                // max: 20
-                // commented out so that Flot adjusts y-axis automatically
-            },
-            xaxis: {
-                show: true
-            }
-
-        });
-
-        function update() {
-            plot.setData([x_plot, y_plot, z_plot, acceleration_plot ]);
-
-            plot.setupGrid();
-
-            plot.draw();
-            // timeout = setTimeout(update, 10); // in milliseconds
+    
+    // Plot data
+    var plot = $.plot("#placeholder", [ x_plot, y_plot, z_plot, acceleration_plot ], {
+        series: {
+            shadowSize: 0   // Drawing is faster without shadows
+        },
+        yaxis: {
+            // min: -20,
+            // max: 20
+            // commented out so that Flot adjusts y-axis automatically
+        },
+        xaxis: {
+            show: true
         }
-        update();
+
+    });
+
+    function update() {
+        plot.setData([x_plot, y_plot, z_plot, acceleration_plot ]);
+
+        plot.setupGrid();
+
+        plot.draw();
+    }
+    update();
 
 }
 
@@ -246,6 +246,7 @@ function firebaseDelete( snapshotID ) {
     firebaseSavedRuns.child(snapshotID).remove();
 }
 
+// Replaying data in Flot
 function readData( snapshotID ) {
     var stepCounter = new StepCounter();
 
@@ -267,6 +268,7 @@ function readData( snapshotID ) {
                 // max: 20
                 // commented out so that Flot adjusts y-axis automatically
             },
+            // Set x-axis bounds to the bounds of the data
             xaxis: {
                 show: true,
                 min: parsed.milliseconds[0],
@@ -281,6 +283,7 @@ function readData( snapshotID ) {
 
         var i = 0;
 
+        // Every 10 ms, take a point from the loaded data and put it into the plot
         var timer = setInterval(function() {
             x_plot.push([parsed.milliseconds[i], parsed.x[i]]);
             y_plot.push([parsed.milliseconds[i], parsed.y[i]]);
@@ -298,6 +301,7 @@ function readData( snapshotID ) {
             plot.setupGrid();
             plot.draw();
 
+            // When we've gone through all the points, clear the interval
             i += 1;
             if (i == parsed.milliseconds.length) {
                 clearInterval(timer);
